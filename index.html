@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Enhancer | Voice Assistant</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #020617;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --bg-sidebar: rgba(15, 23, 42, 0.9);
+            --border-color: rgba(30, 41, 59, 0.5);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-dark: #1d4ed8;
+            --accent-glow: rgba(59, 130, 246, 0.2);
+            --orb-idle: #1e293b;
+            --bubble-user: #1e40af;
+            --bubble-bot: rgba(30, 41, 59, 0.3);
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(30, 58, 138, 0.15) 0%, transparent 40%);
+        }
+
+        /* Logo Area */
+        .header-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.8), transparent);
+            pointer-events: none;
+        }
+
+        .logo-container {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Layout Grid */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
+            width: 100vw;
+            padding-top: 70px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .session-info i {
+            color: var(--accent-blue);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(30, 58, 138, 0.05) 0%, transparent 70%);
+        }
+
+        /* Header / Visualizer Area */
+        .visualizer-area {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .orb-outer {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .orb-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--accent-dark);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .orb {
+            width: 44px;
+            height: 44px;
+            background: var(--orb-idle);
+            border-radius: 50%;
+            z-index: 2;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .orb-glow {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.5;
+            transition: all 0.5s ease;
+        }
+
+        /* States */
+        .orb.listening {
+            background: var(--accent-blue);
+            box-shadow: 0 0 30px var(--accent-blue);
+            transform: scale(1.2);
+            animation: orb-pulse 2s infinite ease-in-out;
+        }
+
+        .orb.speaking {
+            background: var(--accent-light);
+            box-shadow: 0 0 40px var(--accent-light);
+            animation: orb-ripple 1.2s infinite ease-out;
+        }
+
+        .orb.processing {
+            background: #fff;
+            animation: orb-breathe 1s infinite alternate;
+        }
+
+        @keyframes orb-pulse {
+            0% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes orb-ripple {
+            0% {
+                box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 0 30px rgba(96, 165, 250, 0);
+            }
+        }
+
+        @keyframes orb-breathe {
+            from {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            to {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 15%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+            animation: slideUp 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-row.user-row {
+            justify-content: flex-end;
+        }
+
+        .message-row.bot-row {
+            justify-content: flex-start;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.bot {
+            background: var(--bubble-bot);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background: var(--bubble-user);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .timestamp {
+            display: block;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            opacity: 0.6;
+        }
+
+        /* Controls */
+        .controls-area {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            background: linear-gradient(to top, var(--bg-body), transparent);
+        }
+
+        #start-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 2.5rem;
+            height: 56px;
+            border-radius: 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        #start-btn:hover {
+            transform: translateY(-2px);
+            background: var(--accent-light);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        #start-btn.active {
+            background: #ef4444;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        #start-btn.active:hover {
+            background: #f87171;
+        }
+
+        .status-badge {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .status-dot.active {
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .chat-area {
+                padding: 2rem 5%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header-bar">
+        <div class="logo-container">
+            <img src="AIEnhancer_oneture_logo-removebg-preview.png" alt="Logo" class="logo-img">
+            <span class="brand-name">AI ENHANCER</span>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <span class="section-title">Session Details</span>
+                <div class="stat-card">
+                    <span class="stat-label">Active Language</span>
+                    <span class="stat-value" id="active-lang">English</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Session Duration</span>
+                    <span class="stat-value" id="session-time">00:00</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="section-title">System Health</span>
+                <div class="session-info">
+                    <i class="fas fa-bolt"></i>
+                    <span>Latency: <span id="latency-val">24ms</span></span>
+                </div>
+                <div class="session-info">
+                    <i class="fas fa-signal"></i>
+                    <span>Connection: <span id="conn-status">Stable</span></span>
+                </div>
+            </div>
+
+            <div style="flex:1"></div>
+
+            <div class="sidebar-section" style="opacity: 0.5; font-size: 0.7rem;">
+                Powered by AI Enhancer Engine v2.0
+            </div>
+        </aside>
+
+        <!-- Main Chat Content -->
+        <main class="chat-container">
+            <div class="visualizer-area">
+                <div class="orb-outer">
+                    <div class="orb-glow"></div>
+                    <div class="orb-ring"></div>
+                    <div class="orb" id="orb"></div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Ready to Connect</span>
+                </div>
+            </div>
+
+            <div class="chat-area" id="chat-box">
+                <div class="message-row bot-row">
+                    <div class="message bot">
+                        Welcome to AI Enhancer. How can I help you today?
+                        <span class="timestamp">System Initialize</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-area">
+                <button id="start-btn">
+                    <i class="fas fa-microphone"></i>
+                    <span>Start Conversation</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="voice-app.js"></script>
+    <script>
+        // UI Interaction enhancements
+        const btn = document.getElementById('start-btn');
+        const btnIcon = btn.querySelector('i');
+        const btnText = btn.querySelector('span');
+        const statusDot = document.getElementById('status-dot');
+        const sessionTimeElem = document.getElementById('session-time');
+
+        let sessionStartTime = null;
+        let timerInterval = null;
+
+        function updateTimer() {
+            if (!sessionStartTime) return;
+            const now = new Date();
+            const diff = Math.floor((now - sessionStartTime) / 1000);
+            const mins = Math.floor(diff / 60).toString().padStart(2, '0');
+            const secs = (diff % 60).toString().padStart(2, '0');
+            sessionTimeElem.innerText = `${mins}:${secs}`;
+        }
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    if (btn.classList.contains('active')) {
+                        btnIcon.className = 'fas fa-square';
+                        btnText.innerText = 'End Session';
+                        statusDot.classList.add('active');
+
+                        sessionStartTime = new Date();
+                        timerInterval = setInterval(updateTimer, 1000);
+                    } else {
+                        btnIcon.className = 'fas fa-microphone';
+                        btnText.innerText = 'Start Session';
+                        statusDot.classList.remove('active');
+
+                        clearInterval(timerInterval);
+                        sessionStartTime = null;
+                        sessionTimeElem.innerText = "00:00";
+                    }
+                }
+            });
+        });
+
+        observer.observe(btn, { attributes: true });
+
+        // Enhanced addMessage function to override or supplement
+        const originalAddMessage = window.addMessage;
+        window.addMessage = function (text, type) {
+            const chatBox = document.getElementById('chat-box');
+            if (!text) return;
+
+            // Simple merge logic: if last message is same type, just append
+            const lastRow = chatBox.lastElementChild;
+            if (lastRow && lastRow.classList.contains(`${type}-row`)) {
+                const msgDiv = lastRow.querySelector('.message');
+                const ts = msgDiv.querySelector('.timestamp');
+                if (ts) ts.remove();
+
+                msgDiv.innerHTML += '<br>' + text.replace(/\n/g, '<br>') +
+                    `<span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return;
+            }
+
+            const row = document.createElement('div');
+            row.className = `message-row ${type}-row`;
+            row.style.opacity = "0"; // Trigger animation
+
+            row.innerHTML = `
+                <div class="message ${type}">
+                    ${text.replace(/\n/g, '<br>')}
+                    <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+            `;
+
+            chatBox.appendChild(row);
+
+            // Force reflow for animation
+            row.offsetHeight;
+            row.style.opacity = "1";
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+    </script>
+</body>
+
+</html>

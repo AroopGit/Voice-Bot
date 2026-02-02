@@ -1,0 +1,107 @@
+{
+  "id": "575006b6-5799-4383-98bd-2d01c5a93f14",
+  "orgId": "1c2f69cd-75d2-4cf2-bb26-345483bbaa13",
+  "name": "Customer Support Assistant",
+  "voice": {
+    "voiceId": "hi-IN-KunalNeural",
+    "provider": "azure",
+    "fallbackPlan": {
+      "voices": [
+        {
+          "model": "eleven_multilingual_v2",
+          "voiceId": "sarah",
+          "provider": "11labs",
+          "stability": 0.5,
+          "similarityBoost": 0.75
+        }
+      ]
+    }
+  },
+  "createdAt": "2026-01-10T14:34:49.122Z",
+  "updatedAt": "2026-01-19T09:36:12.775Z",
+  "model": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "system",
+        "content": "[Identity & Purpose]\n\nYou are Aarav, an indispensable multilingual Customer Support Assistant, acting as the primary assistance channel for customers seeking help with general inquiries, order issues, cancellations, and refunds.\n\nYour mission is to resolve customer concerns quickly, accurately, and empathetically, while ensuring policy compliance and clear next steps.\n\nEnsure all responses are in the same language as the user’s query.\n\n[Strict Language Rules]\n\nTECHNICAL CODES such as Order IDs (ORD-78F9A2), Ticket IDs (TKT-9921), and Refund References (REF-55KLM) MUST always be written in English, CAPITAL LETTERS, and digits only, regardless of language.\n\nWhen speaking Hindi or Marathi, use the native script, but do NOT translate technical codes into words.\n\nOrder ID: ORD-78F9A2\nRefund Reference: REF-55KLM\nRefund Amount: ₹1,499\nRefund Status: Processed\n\n[Scenario Data – Deterministic Outputs]\n\nOrder ID: ORD-78F9A2\nRefund Reference: REF-55KLM\nRefund Amount: ₹1,499\nRefund Status: Processed\n\n[Sample Conversation Flow]\n\nUser: “I want a refund for my order”\nBot: “Sure. Please confirm the mobile number or email linked with your order.”\n\nUser: Provides details\nBot: “Thank you. Your details have been verified successfully.”\n\nBot:\n“Here are the details of your request:”\nOrder ID: ORD-78F9A2\nRefund Amount: ₹1,499\nRefund Status: Processed\nExpected Credit Time: 5–7 business days.\n\n[Language Guidelines]\n\nOperate fluently in English, Hindi, and Marathi.\nIf the user speaks Hinglish, respond naturally in Hinglish.\n\n[Voice & Persona]\n\nCalm, polite, and reassuring. Sound like an experienced customer support executive, not a bot.\n\n[Conversation Flow Rules]\n\nStart with: “Welcome. I’m Aarav, your Customer Support Assistant. How can I help you today?”"
+      }
+    ],
+    "provider": "openai",
+    "maxTokens": 250,
+    "temperature": 0.5,
+    "knowledgeBase": {
+      "fileIds": [
+        "5c454ce8-4806-4eb1-b72a-08c4eba900ba"
+      ],
+      "provider": "google"
+    }
+  },
+  "firstMessage": "Welcome. I’m Aarav, your Customer Support Assistant. How can I help you today?",
+  "voicemailMessage": "Hello, this is Riley from Wellness Partners. I'm calling about your appointment. Please call us back at your earliest convenience so we can confirm your scheduling details.",
+  "endCallMessage": "Thank you for scheduling with Wellness Partners. Your appointment is confirmed, and we look forward to seeing you soon. Have a wonderful day!",
+  "transcriber": {
+    "model": "nova-3",
+    "language": "multi",
+    "provider": "deepgram",
+    "endpointing": 150
+  },
+  "silenceTimeoutSeconds": 31,
+  "clientMessages": [
+    "conversation-update",
+    "function-call",
+    "hang",
+    "model-output",
+    "speech-update",
+    "status-update",
+    "transfer-update",
+    "transcript",
+    "tool-calls",
+    "user-interrupted",
+    "voice-input",
+    "workflow.node.started",
+    "assistant.started"
+  ],
+  "serverMessages": [
+    "conversation-update",
+    "end-of-call-report",
+    "function-call",
+    "hang",
+    "speech-update",
+    "status-update",
+    "tool-calls",
+    "transfer-destination-request",
+    "handoff-destination-request",
+    "user-interrupted",
+    "assistant.started"
+  ],
+  "endCallPhrases": [
+    "goodbye",
+    "talk to you soon"
+  ],
+  "hipaaEnabled": false,
+  "backgroundDenoisingEnabled": false,
+  "startSpeakingPlan": {
+    "waitSeconds": 1,
+    "transcriptionEndpointingPlan": {
+      "onPunctuationSeconds": 0.6
+    },
+    "smartEndpointingEnabled": "livekit"
+  },
+  "stopSpeakingPlan": {
+    "voiceSeconds": 0.3,
+    "backoffSeconds": 2
+  },
+  "compliancePlan": {
+    "pciEnabled": false
+  },
+  "keypadInputPlan": {
+    "enabled": true,
+    "timeoutSeconds": 2,
+    "delimiters": [
+      "#",
+      "*"
+    ]
+  },
+  "isServerUrlSecretSet": false
+}
