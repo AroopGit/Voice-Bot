@@ -80,8 +80,13 @@ async def lifespan(app: FastAPI):
             print("⚠️  LLM will use fallback responses")
             llm_service = None
         else:
-            llm_service = MistralLLM(model_path=model_path, n_gpu_layers=0)
-            print("✅ LLM Ready")
+            try:
+                llm_service = MistralLLM(model_path=model_path, n_gpu_layers=0)
+                print("✅ LLM Ready")
+            except Exception as llm_error:
+                print(f"⚠️  LLM initialization failed: {llm_error}")
+                print("⚠️  Continuing with fallback responses")
+                llm_service = None
         
         # Initialize TTS (Edge-TTS)
         print("🔊 Loading Edge-TTS...")
@@ -132,6 +137,16 @@ async def serve_voice_app_js():
             "Expires": "0"
         }
     )
+
+@app.get("/AIEnhancer_oneture_logo-removebg-preview.png")
+async def serve_logo():
+    """Serve the Oneture logo"""
+    return FileResponse("AIEnhancer_oneture_logo-removebg-preview.png")
+
+@app.get("/aws_logo.png")
+async def serve_aws_logo():
+    """Serve the AWS logo"""
+    return FileResponse("aws_logo.png")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

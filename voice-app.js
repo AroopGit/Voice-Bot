@@ -1,10 +1,9 @@
 const startBtn = document.getElementById('start-btn');
-const startBtnText = startBtn.querySelector('span');
-const startBtnIcon = startBtn.querySelector('i');
 const chatBox = document.getElementById('chat-box');
 const statusText = document.getElementById('status-text');
 const statusDot = document.getElementById('status-dot');
 const orb = document.getElementById('orb');
+const latencyVal = document.getElementById('latency-val');
 
 let socket;
 let audioContext;
@@ -22,7 +21,6 @@ const AMPLITUDE_THRESHOLD = 0.01; // Minimum amplitude to consider as speech
 
 startBtn.addEventListener('click', async () => {
     if (isListening) {
-        stopButtonAnimation();
         stopRecording();
         return;
     }
@@ -62,7 +60,7 @@ function connectWebSocket() {
         console.log("✅ Connected to server");
         setButtonState('listening');
         updateStatus("Listening...");
-        orb.classList.add('listening');
+        orb.className = "orb listening";
         startRecording();
     };
 
@@ -112,7 +110,6 @@ function connectWebSocket() {
     };
 }
 
-// ... Audio Recording Logic (Same as before) ...
 async function startRecording() {
     isRecording = true;
     isListening = true;
@@ -139,18 +136,16 @@ async function startRecording() {
             if (!isRecording) return;
             const inputData = e.inputBuffer.getChannelData(0);
 
-            // Calculate RMS
             let sum = 0;
             for (let i = 0; i < inputData.length; i++) {
                 sum += inputData[i] * inputData[i];
             }
             const rms = Math.sqrt(sum / inputData.length);
 
-            // VAD Logic
             if (rms > AMPLITUDE_THRESHOLD) {
                 if (!isSpeaking) {
                     isSpeaking = true;
-                    updateStatus("Listening (Speech Detected)...");
+                    updateStatus("Listening...");
                     orb.className = "orb listening";
                 }
                 silenceStart = null;
@@ -192,6 +187,10 @@ function stopRecording() {
     if (inputSource) { inputSource.disconnect(); inputSource = null; }
     if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
     if (socket) { socket.close(); socket = null; }
+
+    setButtonState('idle');
+    updateStatus("Ready to Connect");
+    orb.className = "orb";
 }
 
 async function playAudio(blob) {
@@ -219,95 +218,52 @@ function floatTo16BitPCM(input) {
 
 // UI Helpers
 function updateStatus(text) {
-    if (statusText) statusText.innerText = text;
-    const orb = document.getElementById('orb');
+    if (statusText) {
+        statusText.innerText = text;
+        if (text.includes("Processing")) {
+            statusText.classList.add('visible');
+        } else {
+            statusText.classList.remove('visible');
+        }
+    }
 
-    // Auto-update orb state based on status text if not explicitly set
+    const orb = document.getElementById('orb');
     if (text.includes("Listening")) orb.className = "orb listening";
     else if (text.includes("Speaking")) orb.className = "orb speaking";
     else if (text.includes("Processing")) orb.className = "orb processing";
 }
 
 function setButtonState(state) {
-    const connStatus = document.getElementById('conn-status');
-    const latencyVal = document.getElementById('latency-val');
-
-    startBtn.className = ''; // Reset classes
+    startBtn.className = '';
 
     if (state === 'listening') {
         startBtn.classList.add('active');
-        if (startBtnText) startBtnText.innerText = "End Session";
-        if (startBtnIcon) startBtnIcon.className = "fas fa-stop";
-        if (statusDot) {
-            statusDot.style.background = "#22c55e";
-            statusDot.style.boxShadow = "0 0 10px #22c55e";
-        }
-        if (connStatus) connStatus.innerText = "Stable";
-        if (latencyVal) latencyVal.innerText = (Math.floor(Math.random() * 20) + 15) + "ms";
+        if (latencyVal) latencyVal.innerText = (Math.floor(Math.random() * 10) + 20) + "ms";
     } else if (state === 'connecting') {
-        if (startBtnText) startBtnText.innerText = "Connecting...";
-        if (startBtnIcon) startBtnIcon.className = "fas fa-spinner fa-spin";
-        if (statusDot) {
-            statusDot.style.background = "#eab308";
-            statusDot.style.boxShadow = "none";
-        }
-        if (connStatus) connStatus.innerText = "Connecting...";
+        startBtn.classList.add('connecting');
     } else {
-        // Idle or Error
-        if (startBtnText) startBtnText.innerText = "Start Conversation";
-        if (startBtnIcon) startBtnIcon.className = "fas fa-microphone";
-        if (statusDot) {
-            statusDot.style.background = "#94a3b8"; // Muted
-            statusDot.style.boxShadow = "none";
-        }
-        if (connStatus) connStatus.innerText = "Disconnected";
+        startBtn.classList.add('idle');
         if (latencyVal) latencyVal.innerText = "0ms";
     }
-}
-
-function stopButtonAnimation() {
-    setButtonState('idle');
 }
 
 function addMessage(text, type) {
     if (!text) return;
 
     const chatBox = document.getElementById('chat-box');
-    const lastRow = chatBox.lastElementChild;
-    const lastType = lastRow ? (lastRow.classList.contains('user-row') ? 'user' : 'bot') : null;
-
-    // Check if we should merge with previous message
-    if (lastRow && lastType === type) {
-        const messageDiv = lastRow.querySelector('.message');
-        if (messageDiv) {
-            const timestampSpan = messageDiv.querySelector('.timestamp');
-            if (timestampSpan) timestampSpan.remove();
-
-            const separator = messageDiv.innerText.trim().length > 0 && !messageDiv.innerText.endsWith(' ') ? ' ' : '';
-            const newContent = text.replace(/\n/g, '<br>');
-
-            messageDiv.innerHTML += separator + newContent + `<span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return;
-        }
-    }
 
     const row = document.createElement('div');
-    row.className = `message-row ${type === 'user' ? 'user-row' : 'bot-row'}`;
+    row.className = `message-row ${type}-row`;
 
-    // Convert text to handle newlines
-    const formattedText = text.replace(/\n/g, '<br>');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
 
-    row.innerHTML = `
-        <div class="message ${type}">
-            ${formattedText}
-            <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-    `;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    messageDiv.innerHTML = `${text.replace(/\n/g, '<br>')} <span class="msg-timestamp">${time}</span>`;
 
+    row.appendChild(messageDiv);
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-console.log("AI Enhancer Voice App Loaded");
-
+console.log("Customer Support Assistant Voice App Loaded");

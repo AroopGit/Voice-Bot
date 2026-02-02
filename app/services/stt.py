@@ -36,19 +36,45 @@ class FasterWhisperSTT:
         # Enhanced transcription with better parameters for accuracy
         segments, info = self.model.transcribe(
             audio_np,
-            beam_size=5,              # Higher beam size for better accuracy
-            best_of=5,                # Consider top 5 candidates
-            temperature=0.0,          # Deterministic output
-            vad_filter=True,          # Voice Activity Detection to filter silence
-            vad_parameters=dict(
-                threshold=0.5,        # VAD threshold
-                min_speech_duration_ms=250,  # Minimum speech duration
-                min_silence_duration_ms=500  # Minimum silence to split
+
+            task="transcribe",         
+            language=None,              
+
+            beam_size=3,                
+            best_of=3,
+            temperature=0.0,
+            repetition_penalty=1.1,
+            no_repeat_ngram_size=3,
+
+            condition_on_previous_text=True,
+
+            initial_prompt=(
+                "This is a multilingual logistics booking call. "
+                "Translate accurately to English. "
+                "Preserve city names, vehicle types, weights, dates, prices, "
+                "and booking confirmation words. "
+                "Do not hallucinate missing information."
             ),
-            language=None,            # Auto-detect language
-            condition_on_previous_text=True,  # Use context from previous segments
-            word_timestamps=False,    # Disable for faster processing
-            without_timestamps=True   # We only need text
+
+            hotwords=(
+                "truck tempo container open body "
+                "20 ft 22 ft 24 ft 32 ft "
+                "pickup drop loading unloading "
+                "ton tons kg quintal "
+                "today tomorrow "
+                "rupees rs price rate "
+                "booked confirmed final"
+            ),
+
+            vad_filter=True,
+            vad_parameters=dict(
+                threshold=0.5,
+                min_speech_duration_ms=250,
+                min_silence_duration_ms=400
+            ),
+
+            word_timestamps=False,
+            without_timestamps=True
         )
         
         # Collect all segments
