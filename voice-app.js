@@ -16,7 +16,7 @@ let isListening = false;
 // Voice Activity Detection (VAD) settings
 let silenceStart = null;
 let isSpeaking = false;
-const SILENCE_THRESHOLD = 2000; // 2 seconds of silence
+const SILENCE_THRESHOLD = 800; // 0.8 seconds of silence
 const AMPLITUDE_THRESHOLD = 0.01; // Minimum amplitude to consider as speech
 
 startBtn.addEventListener('click', async () => {
