@@ -1,4 +1,4 @@
-# SwiftShip India Voice Bot Backend 🇮🇳
+# Vahak India Voice Bot Backend 🇮🇳
 
 High-performance RAG voice bot for logistics customer service, optimized for the **Indian market** with support for **Hindi, English, and Hinglish**.
 
@@ -225,4 +225,4 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Made for India 🇮🇳** | SwiftShip Logistics
+**Made for India 🇮🇳** | Vahak Logistics

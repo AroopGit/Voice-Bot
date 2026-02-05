@@ -1,5 +1,5 @@
 """
-SwiftShip Logistics Voice Bot - Main FastAPI Application
+Vahak Logistics Voice Bot - Main FastAPI Application
 
 High-performance multilingual RAG voice bot backend with:
 - Real-time voice streaming via WebSocket
@@ -114,7 +114,7 @@ APP_START_TIME = time.time()
 async def lifespan(app: FastAPI):
     """Application lifecycle handler."""
     logger.info("=" * 50)
-    logger.info("🚀 SwiftShip Voice Bot Starting...")
+    logger.info("🚀 Vahak Voice Bot Starting...")
     logger.info("=" * 50)
     
     # Initialize services
@@ -138,7 +138,7 @@ async def lifespan(app: FastAPI):
 # ============ FastAPI App ============
 
 app = FastAPI(
-    title="SwiftShip Voice Bot API",
+    title="Vahak Voice Bot API",
     description="High-performance multilingual RAG voice bot for customer service",
     version="1.0.0",
     lifespan=lifespan

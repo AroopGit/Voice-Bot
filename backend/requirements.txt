@@ -1,4 +1,4 @@
-# SwiftShip India Voice Bot - Dependencies
+# Vahak India Voice Bot - Dependencies
 # Optimized for Hindi, English, and Hinglish
 
 # Core Framework

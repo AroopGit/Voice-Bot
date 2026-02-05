@@ -1,5 +1,5 @@
 """
-Configuration module for the SwiftShip India Voice Bot.
+Configuration module for the Vahak India Voice Bot.
 Optimized for Hindi, English, and Hinglish support.
 """
 
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # === Qdrant Configuration ===
     QDRANT_HOST: str = Field(default="localhost", description="Qdrant server host")
     QDRANT_PORT: int = Field(default=6333, description="Qdrant server port")
-    QDRANT_COLLECTION: str = Field(default="swiftship_india_kb", description="Qdrant collection name")
+    QDRANT_COLLECTION: str = Field(default="vahak_india_kb", description="Qdrant collection name")
     QDRANT_GRPC_PORT: int = Field(default=6334, description="Qdrant gRPC port")
     
     # === Model Configuration ===
@@ -93,8 +93,8 @@ LANGUAGE_NAMES: Dict[str, str] = {
     "mr": "Marathi (मराठी)",
 }
 
-# System prompt for the Indian logistics customer service bot
-SYSTEM_PROMPT = """You are a customer service agent for SwiftShip Logistics, India's leading delivery platform.
+# System prompt for the Vahak logistics customer service bot
+SYSTEM_PROMPT = """You are a customer service agent for Vahak Logistics, India's leading delivery platform.
 
 Your responsibilities:
 - Help customers track packages and shipments across India

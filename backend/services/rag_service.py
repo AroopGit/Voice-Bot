@@ -37,7 +37,7 @@ class RAGService:
         self,
         qdrant_host: str = "localhost",
         qdrant_port: int = 6333,
-        collection_name: str = "swiftship_knowledge",
+        collection_name: str = "vahak_knowledge",
         embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2",
         groq_api_key: Optional[str] = None
     ):

@@ -24,7 +24,7 @@ import re
 from datetime import datetime
 
 class CustomSTT(STTService):
-    def __init__(self, model_size="medium"):
+    def __init__(self, model_size="small"):
         super().__init__()
         self.stt = FasterWhisperSTT(model_size=model_size)
         

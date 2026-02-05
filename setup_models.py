@@ -73,11 +73,11 @@ def check_faster_whisper():
         from faster_whisper import WhisperModel
         print("✅ faster-whisper package installed")
         print()
-        print("📥 Downloading Whisper 'base' model (first run only)...")
+        print("📥 Downloading Whisper 'small' model (first run only)...")
         print("   This may take a few minutes...")
         
         # This will download the model if not present
-        model = WhisperModel("base", device="cpu", compute_type="int8")
+        model = WhisperModel("small", device="cpu", compute_type="int8")
         print("✅ Whisper model ready!")
         
     except ImportError:

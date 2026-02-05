@@ -12,6 +12,7 @@ let inputSource;
 let mediaStream;
 let isRecording = false;
 let isListening = false;
+let isBotSpeaking = false;  // NEW: Track when bot is speaking to mute mic
 
 // Voice Activity Detection (VAD) settings
 let silenceStart = null;
@@ -66,12 +67,22 @@ function connectWebSocket() {
 
     socket.onmessage = async (event) => {
         if (event.data instanceof Blob) {
-            // Received audio blob (TTS)
+            // Received audio blob (TTS) - MUTE MIC BEFORE PLAYING
+            console.log("🔊 Bot speaking - muting microphone");
+            isBotSpeaking = true;
+            pauseMicrophone();
+
             updateStatus("Speaking...");
             orb.className = "orb speaking";
+
             await playAudio(event.data);
 
+            // Resume microphone AFTER audio finishes
+            console.log("🎤 Bot finished - resuming microphone");
+            isBotSpeaking = false;
+
             if (isListening) {
+                resumeMicrophone();
                 updateStatus("Listening...");
                 orb.className = "orb listening";
                 isSpeaking = false;
@@ -88,6 +99,16 @@ function connectWebSocket() {
                     addMessage(data.text, 'bot');
                 } else if (data.type === 'error') {
                     updateStatus("Error: " + data.message);
+                } else if (data.type === 'bot_speaking_start') {
+                    // Bot is about to speak - mute mic
+                    console.log("🔇 Received bot_speaking_start - muting mic");
+                    isBotSpeaking = true;
+                    pauseMicrophone();
+                } else if (data.type === 'bot_speaking_end') {
+                    // Bot finished speaking - unmute mic
+                    console.log("🔊 Received bot_speaking_end - unmuting mic");
+                    isBotSpeaking = false;
+                    resumeMicrophone();
                 }
             } catch (e) {
                 console.log("Received non-JSON text:", event.data);
@@ -110,11 +131,32 @@ function connectWebSocket() {
     };
 }
 
+// Pause microphone (mute) - stops sending audio to server
+function pauseMicrophone() {
+    if (mediaStream) {
+        mediaStream.getAudioTracks().forEach(track => {
+            track.enabled = false;
+        });
+        console.log("🔇 Microphone muted");
+    }
+}
+
+// Resume microphone (unmute) - resumes sending audio
+function resumeMicrophone() {
+    if (mediaStream) {
+        mediaStream.getAudioTracks().forEach(track => {
+            track.enabled = true;
+        });
+        console.log("🔊 Microphone unmuted");
+    }
+}
+
 async function startRecording() {
     isRecording = true;
     isListening = true;
     silenceStart = null;
     isSpeaking = false;
+    isBotSpeaking = false;
 
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -133,7 +175,9 @@ async function startRecording() {
         processor.connect(audioContext.destination);
 
         processor.onaudioprocess = (e) => {
-            if (!isRecording) return;
+            // Don't process audio if bot is speaking or not recording
+            if (!isRecording || isBotSpeaking) return;
+
             const inputData = e.inputBuffer.getChannelData(0);
 
             let sum = 0;
@@ -165,7 +209,7 @@ async function startRecording() {
             }
 
             const pcmData = floatTo16BitPCM(inputData);
-            if (socket && socket.readyState === WebSocket.OPEN) {
+            if (socket && socket.readyState === WebSocket.OPEN && !isBotSpeaking) {
                 socket.send(pcmData);
             }
         };
@@ -181,6 +225,7 @@ function stopRecording() {
     isRecording = false;
     isListening = false;
     isSpeaking = false;
+    isBotSpeaking = false;
     silenceStart = null;
 
     if (processor) { processor.disconnect(); processor.onaudioprocess = null; processor = null; }
@@ -194,17 +239,34 @@ function stopRecording() {
 }
 
 async function playAudio(blob) {
-    try {
-        if (!audioContext || audioContext.state === 'closed') await initAudio();
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-        source.start(0);
-    } catch (err) {
-        console.error("Playback error:", err);
-    }
+    return new Promise(async (resolve) => {
+        try {
+            if (!audioContext || audioContext.state === 'closed') await initAudio();
+            const arrayBuffer = await blob.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+
+            // When audio playback ends, resolve the promise
+            source.onended = () => {
+                console.log("🔊 Audio playback finished");
+                resolve();
+            };
+
+            source.start(0);
+
+            // Fallback timeout in case onended doesn't fire
+            const duration = audioBuffer.duration * 1000 + 500; // Add 500ms buffer
+            setTimeout(() => {
+                resolve();
+            }, duration);
+
+        } catch (err) {
+            console.error("Playback error:", err);
+            resolve(); // Resolve anyway to continue
+        }
+    });
 }
 
 function floatTo16BitPCM(input) {

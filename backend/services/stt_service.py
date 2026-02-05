@@ -27,7 +27,7 @@ class STTService:
     
     def __init__(
         self,
-        model_size: str = "base",
+        model_size: str = "small",
         device: str = "auto",
         compute_type: str = "auto",
         download_root: Optional[str] = None
